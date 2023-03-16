@@ -2,7 +2,7 @@ const express = require("express");
 const multer = require("multer");
 const router = express.Router();
 const { Fileschema } = require("../models/file");
-const upload = multer({ dest: "/uploads/" });
+const upload = multer({ dest: "uploads/" });
 var cloudinary = require("cloudinary").v2;
 
 cloudinary.config({
