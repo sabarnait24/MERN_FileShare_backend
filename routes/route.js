@@ -4,6 +4,11 @@ const router = express.Router();
 const { Fileschema } = require("../models/file");
 const upload = multer({ dest: "uploads/" });
 var cloudinary = require("cloudinary").v2;
+// import { unlink } from "node:fs/promises";
+const fs = require("fs");
+const path = require("path");
+
+const directory = "uploads";
 
 cloudinary.config({
   cloud_name: process.env.CLOUD_NAME,
@@ -15,16 +20,10 @@ cloudinary.config({
 router.post("/upload", upload.single("Myfile"), async (req, res) => {
   try {
     if (!req.file) {
-      // console.log("filemkkm");
       return res.status(500).send("File not uploaded");
     }
-    // console.log(req.file.path);
-    const filedata = await cloudinary.uploader.upload(req.file.path, {
-      // folder: "ShareFile",
-      // resource_type: "auto",
-    });
 
-    // console.log(filedata);
+    const filedata = await cloudinary.uploader.upload(req.file.path, {});
 
     const { originalname } = req.file;
     const { secure_url, bytes, resource_type } = filedata;
@@ -41,6 +40,16 @@ router.post("/upload", upload.single("Myfile"), async (req, res) => {
   } catch (error) {
     res.send(error);
   }
+  fs.readdir(directory, (err, files) => {
+    if (err) throw err;
+  
+    for (const file of files) {
+      fs.unlink(path.join(directory, file), (err) => {
+        if (err) throw err;
+      });
+    }
+  });
+ 
 });
 
 router.get("/upload/:id", async (req, res) => {
@@ -50,7 +59,7 @@ router.get("/upload/:id", async (req, res) => {
     if (!file) {
       return res.status(500).send("File not found");
     }
-    const { urlLink, fileSize } = file;
+    const { urlLink } = file;
     // console.log(urlLink);/
 
     res.status(200).json(urlLink);
